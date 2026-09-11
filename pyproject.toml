@@ -1,0 +1,41 @@
+[project]
+name = "strix-halo-jax"
+version = "0.1.0"
+description = "JAX and MuJoCo MJX on AMD Ryzen AI MAX (gfx1151) from pip wheels, with a hang-safe check"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = "==3.12.*"
+dependencies = ["jax==0.11.1", "jaxlib==0.11.1", "numpy"]
+
+[project.optional-dependencies]
+# The working GPU set (11 September 2026): JAX's ROCm plugin from PyPI + AMD's gfx1151 library wheels.
+gfx1151 = [
+    "jax-rocm7-plugin==0.11.1",
+    "jax-rocm7-pjrt==0.11.1",
+    "rocm[libraries]==7.13.0",
+    "rocm-sdk-core==7.13.0",
+    "rocm-sdk-libraries-gfx1151==7.13.0",
+]
+# The simulator stages (mjx_reset, mjx_step) of jaxcheck.
+mjx = ["playground==0.2.0", "mujoco==3.13.0", "mujoco-mjx==3.13.0"]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+package = false
+
+[[tool.uv.index]]
+name = "amd-gfx1151"
+url = "https://repo.amd.com/rocm/whl/gfx1151/"
+explicit = true
+
+[tool.uv.sources]
+rocm = { index = "amd-gfx1151" }
+rocm-sdk-core = { index = "amd-gfx1151" }
+rocm-sdk-libraries-gfx1151 = { index = "amd-gfx1151" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

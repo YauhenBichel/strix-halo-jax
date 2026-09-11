@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Only needed for the OLD 0.9.x JAX ROCm plugins (AMD's gfx1151 release index, TheRock nightlies):
+# they do not find the rocm-sdk wheel libraries by themselves. The 0.11.x plugin from PyPI does.
+#   ./rocm-run .venv/bin/python jaxcheck.py --label my-set
+# Also sets two things worth having with any version:
+#   - no memory preallocation (the GPU is often shared, e.g. with a resident LLM);
+#   - one compilation cache per jaxlib+plugin build: XLA does not version cached executables, and a
+#     JAX 0.9.2 process loading a program compiled by 0.11.1 from a shared cache failed in rocBLAS.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+SP=$(ls -d "${VENV:-$ROOT/.venv}"/lib/python3.*/site-packages 2>/dev/null | head -1 || true)
+if [ -n "$SP" ] && [ -d "$SP/_rocm_sdk_core/lib" ]; then
+  core="$SP/_rocm_sdk_core/lib"
+  libs=$(ls -d "$SP"/_rocm_sdk_libraries_*/lib 2>/dev/null | tr '\n' ':')
+  export LD_LIBRARY_PATH="$core:$core/rocm_sysdeps/lib:$libs${LD_LIBRARY_PATH:-}"
+  export JAX_ROCM_PLUGIN_INTERNAL_BITCODE_PATH="$core/llvm/amdgcn/bitcode"
+  export HIP_DEVICE_LIB_PATH="$core/llvm/amdgcn/bitcode"
+  export JAX_ROCM_PLUGIN_INTERNAL_LLD_PATH="$core/llvm/bin"
+fi
+export XLA_PYTHON_CLIENT_PREALLOCATE="${XLA_PYTHON_CLIENT_PREALLOCATE:-false}"
+BUILD=$(ls -d "${SP:-/nonexistent}"/jaxlib-*.dist-info "${SP:-/nonexistent}"/jax_rocm7_plugin-*.dist-info 2>/dev/null \
+        | xargs -n1 basename 2>/dev/null | sed 's/\.dist-info$//' | tr '\n' '_' | tr -c 'A-Za-z0-9._+-' '_')
+export JAX_COMPILATION_CACHE_DIR="${JAX_COMPILATION_CACHE_DIR:-$HOME/.cache/jax/${BUILD:-unknown}}"
+exec "$@"
