@@ -902,17 +902,14 @@ wheels = [
 [[package]]
 name = "strix-halo-jax"
 version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "jax", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "jaxlib", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "numpy", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-]
+source = { editable = "." }
 
 [package.optional-dependencies]
 gfx1151 = [
+    { name = "jax", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "jax-rocm7-pjrt", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "jax-rocm7-plugin", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "jaxlib", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "rocm", extra = ["libraries"], marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "rocm-sdk-core", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "rocm-sdk-libraries-gfx1151", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
@@ -925,18 +922,19 @@ mjx = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "jax", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "jaxlib", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "pytest", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "jax", specifier = "==0.11.1" },
+    { name = "jax", marker = "extra == 'gfx1151'", specifier = "==0.11.1" },
     { name = "jax-rocm7-pjrt", marker = "extra == 'gfx1151'", specifier = "==0.11.1" },
     { name = "jax-rocm7-plugin", marker = "extra == 'gfx1151'", specifier = "==0.11.1" },
-    { name = "jaxlib", specifier = "==0.11.1" },
+    { name = "jaxlib", marker = "extra == 'gfx1151'", specifier = "==0.11.1" },
     { name = "mujoco", marker = "extra == 'mjx'", specifier = "==3.13.0" },
     { name = "mujoco-mjx", marker = "extra == 'mjx'", specifier = "==3.13.0" },
-    { name = "numpy" },
     { name = "playground", marker = "extra == 'mjx'", specifier = "==0.2.0" },
     { name = "rocm", extras = ["libraries"], marker = "extra == 'gfx1151'", specifier = "==7.13.0", index = "https://repo.amd.com/rocm/whl/gfx1151/" },
     { name = "rocm-sdk-core", marker = "extra == 'gfx1151'", specifier = "==7.13.0", index = "https://repo.amd.com/rocm/whl/gfx1151/" },
@@ -945,7 +943,11 @@ requires-dist = [
 provides-extras = ["gfx1151", "mjx"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pytest" }]
+dev = [
+    { name = "jax", specifier = "==0.11.1" },
+    { name = "jaxlib", specifier = "==0.11.1" },
+    { name = "pytest" },
+]
 
 [[package]]
 name = "tensorboardx"
