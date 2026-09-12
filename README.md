@@ -35,7 +35,7 @@ A broken set shows up in seconds as `fault` or `fail`, instead of a process that
 hour. What it is for — a humanoid walking policy trained on this machine with MuJoCo Playground
 ([humanoid-companion](https://github.com/YauhenBichel/humanoid-companion)):
 
-![A ROBOTIS OP3 humanoid walking forward at 0.5 m/s in MuJoCo](docs/media/op3-walk.gif)
+![A ROBOTIS OP3 humanoid walking forward at 0.5 m/s in MuJoCo](https://raw.githubusercontent.com/YauhenBichel/strix-halo-jax/main/docs/media/op3-walk.gif)
 
 That policy was trained on the CPU (103 M steps in 96 min, 16 JAX CPU devices) while the GPU path
 was broken; with this recipe the same environment steps at up to 30,787 steps/s on the GPU

@@ -1,6 +1,6 @@
 [project]
 name = "strix-halo-jax"
-version = "0.1.0"
+version = "0.1.1"
 description = "Run JAX and MuJoCo MJX on the AMD Ryzen AI MAX (Strix Halo, gfx1151) GPU from pip wheels, and jaxcheck: a hang-safe test of which wheel set works"
 readme = "README.md"
 license = "Apache-2.0"
@@ -58,6 +58,9 @@ only-include = ["jaxcheck.py"]
 
 [tool.hatch.build.targets.sdist]
 include = ["jaxcheck.py", "rocm-run", "tests", "docs", "README.md", "CHANGELOG.md", "LICENSE"]
+# The demo gif is 1.0 MB of a 1.1 MB sdist and only renders the README, which now points at it by
+# URL. Everyone installing the package would otherwise download it.
+exclude = ["docs/media/**"]
 
 [tool.uv]
 environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
