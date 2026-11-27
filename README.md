@@ -41,7 +41,7 @@ That policy was trained on the CPU (103 M steps in 96 min, 16 JAX CPU devices) w
 was broken; with this recipe the same environment steps at up to 30,787 steps/s on the GPU
 (table below).
 
-## The working recipe (11 September 2026)
+## Quick start: the working recipe (11 September 2026)
 
 Linux x86_64, Python 3.12, [uv](https://docs.astral.sh/uv/):
 
@@ -51,6 +51,9 @@ uv pip install --index https://repo.amd.com/rocm/whl/gfx1151/ --index-strategy u
   "jax==0.11.1" "jaxlib==0.11.1" "jax-rocm7-plugin==0.11.1" "jax-rocm7-pjrt==0.11.1" "rocm[libraries]==7.13.0"
 python -c "import jax; print(jax.devices())"        # [RocmDevice(id=0)]
 ```
+
+Expected result: `jax.devices()` lists one `RocmDevice`. To check the rest (matmul, scatters, MuJoCo MJX reset
+and step), run `jaxcheck`, described below.
 
 or, locked, from a clone: `uv sync --extra gfx1151 --extra mjx`. Your user must be in the `render` group
 (`/dev/kfd` is `root:render 0660`): `sudo usermod -aG render,video $USER`, then log in again.
@@ -132,6 +135,46 @@ The MJX stages need `pip install playground`.
 | `rocblas_gemm_ex failed with: rocblas_status_internal_error` in code that used to work | a persistent compilation cache shared between JAX versions ("PjRt-IFRT does not track XLA executable versions") | one cache per jaxlib/plugin build (`rocm-run` does this) |
 | `Unknown flag in XLA_FLAGS: --xla_gpu_…` | the flag exists in the plugin's strings but jaxlib does not accept it | drop it; `jaxcheck.py` reports the line |
 | out-of-memory next to a local LLM | the BIOS gives the iGPU a fixed carve-out (64 GiB here) shared by everything on the GPU | preallocation off; or set the BIOS UMA frame buffer to its minimum so the GPU uses GTT from the full RAM |
+
+## When to use it, and when not
+
+Use it if you have a Ryzen AI MAX (Strix Halo, `gfx1151`) machine on Linux x86_64 and want JAX or MuJoCo MJX on
+its GPU without installing ROCm system-wide, or if JAX on a ROCm GPU hangs or faults and you want to know which
+wheel set is at fault.
+
+Do not use it for other AMD GPUs (the wheels here are the `gfx1151` ones), for Windows or macOS, or for Python
+other than 3.12. It is a tested recipe and a checker, not a fork of JAX or ROCm. The numbers come from one
+machine on one day.
+
+## FAQ
+
+### How do I run JAX on an AMD Strix Halo GPU without installing ROCm?
+
+Follow the [quick start](#quick-start-the-working-recipe-11-september-2026): the JAX 0.11.1 ROCm plugin from PyPI
+plus AMD's `rocm[libraries]` wheels for `gfx1151`. No system ROCm, no `LD_LIBRARY_PATH`.
+
+### Does MuJoCo MJX run on the Radeon 8060S?
+
+Yes, with the JAX 0.11.1 set: `mjx_reset` and `mjx_step` pass in the [matrix](#compatibility-matrix). With JAX
+0.9.2 the MJX reset faults and then hangs.
+
+### Why do I get "Backend 'rocm' is not in the list of known backends"?
+
+Usually a 0.9.x plugin that cannot find the ROCm libraries. See the [traps table](#traps-we-hit-so-you-dont).
+
+### How do I tell whether my wheel set works without waiting for a hang?
+
+Run `jaxcheck`. Each stage runs in its own process, so a GPU fault shows as `fault` in seconds.
+
+### Does jaxcheck send my data anywhere?
+
+No. It uses only the Python standard library and starts local subprocesses. It writes logs and results under
+`results/`.
+
+### How is it different from the official ROCm or JAX install instructions?
+
+Those target supported GPUs with a system ROCm install. This repository records what works on `gfx1151` with pip
+wheels only, with evidence, and gives you a check to repeat it on your own machine. It does not replace them.
 
 ## Contributors
 
